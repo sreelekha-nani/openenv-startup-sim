@@ -1,0 +1,75 @@
+version: "1.0"
+name: "founder_brain_ai"
+description: "AI Startup Decision Simulator (Founder Brain AI)"
+author: "Gemini Expert"
+entry_point: "env:StartupEnv"
+
+tasks:
+  easy: "tasks.easy:get_task"
+  medium: "tasks.medium:get_task"
+  hard: "tasks.hard:get_task"
+
+graders:
+  easy: "graders.easy_grader:grade"
+  medium: "graders.medium_grader:grade"
+  hard: "graders.hard_grader:grade"
+
+# OpenEnv Specification for Action and Observation spaces
+action_space:
+  type: "object"
+  required: ["name"]
+  properties:
+    name:
+      type: "string"
+      enum: ["hire", "fire", "invest", "build_feature", "ignore_market"]
+      description: "The action the founder wants to take."
+    args:
+      type: "object"
+      description: "Arguments for the selected action."
+      properties:
+        n:
+          type: "integer"
+          description: "Number of employees to hire or fire."
+        amount:
+          type: "integer"
+          description: "Amount of budget to invest."
+        name:
+          type: "string"
+          description: "Name of the feature to build."
+
+observation_space:
+  type: "object"
+  properties:
+    budget:
+      type: "integer"
+      description: "Current company budget."
+    employees:
+      type: "integer"
+      description: "Current number of employees."
+    product_features:
+      type: "array"
+      items:
+        type: "string"
+      description: "List of built product features."
+    market_score:
+      type: "number"
+      minimum: 0
+      maximum: 100
+      description: "Current market presence score."
+    competitor_pressure:
+      type: "number"
+      minimum: 0
+      maximum: 100
+      description: "Current level of competitive pressure."
+    last_action_result:
+      type: "string"
+      description: "Message describing the outcome of the last action."
+    step:
+      type: "integer"
+      description: "Current step (month) in the simulation."
+
+schemas:
+  action: "models:Action"
+  observation: "models:Observation"
+  state: "models:State"
+  step_result: "models:StepResult"
