@@ -1,13 +1,10 @@
 import random
 from typing import List, Dict, Any, Optional
 
-from models import Action, Observation, State, StepResult  # ✅ FIXED (no dot)
+from models import Action, Observation, State, StepResult
 
 
 class StartupEnv:
-    """
-    Detailed OpenEnv simulation of a startup founder decision process.
-    """
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
         self.max_steps = self.config.get("max_steps", 24)
@@ -73,7 +70,7 @@ class StartupEnv:
         args = action.args
 
         handler_map = {
-            "hire": self._handle_hire,
+            "hire_employee": self._handle_hire,
             "fire": self._handle_fire,
             "invest": self._handle_invest,
             "build_feature": self._handle_build_feature,
@@ -87,8 +84,9 @@ class StartupEnv:
         if action_name in handler_map:
             step_reward += handler_map[action_name](args)
         else:
-            self.last_action_msg = f"Invalid action: {action_name}."
-            step_reward -= 0.5
+            self.last_action_msg = f"Invalid action: {action_name}"
+            step_reward -= 5
+            self.bad_actions += 1
 
         self._handle_market_events()
 
@@ -115,4 +113,107 @@ class StartupEnv:
             info={"burn_rate": burn_rate, "revenue": revenue}
         )
 
-    # (remaining handlers same — no change needed)
+    # -------- ACTION HANDLERS -------- #
+
+    def _handle_hire(self, args):
+        if self.budget >= 50000:
+            self.employees += 1
+            self.budget -= 50000
+            self.last_action_msg = "Hired a new employee."
+            return 10
+        else:
+            self.last_action_msg = "Not enough budget to hire."
+            return -5
+
+    def _handle_fire(self, args):
+        if self.employees > 1:
+            self.employees -= 1
+            self.last_action_msg = "Fired an employee."
+            return -2
+        else:
+            self.last_action_msg = "Cannot fire more employees."
+            return -5
+
+    def _handle_build_feature(self, args):
+        if self.budget >= 20000:
+            feature = f"Feature_{len(self.product_features)+1}"
+            self.product_features.append(feature)
+            self.budget -= 20000
+            self.market_score += 5
+            self.last_action_msg = f"Built {feature}."
+            return 15
+        else:
+            self.last_action_msg = "Not enough budget."
+            return -5
+
+    def _handle_invest(self, args):
+        if self.budget >= 30000:
+            self.budget -= 30000
+            self.market_score += 10
+            self.last_action_msg = "Invested in growth."
+            return 12
+        else:
+            self.last_action_msg = "Not enough budget."
+            return -5
+
+    def _handle_ignore_market(self, args):
+        self.market_score -= 5
+        self.last_action_msg = "Ignored market trends."
+        return -10
+
+    def _handle_pitch_investors(self, args):
+        if random.random() > 0.5:
+            self.budget += 100000
+            self.funding_round = "Seed"
+            self.last_action_msg = "Funding raised!"
+            return 25
+        else:
+            self.last_action_msg = "Pitch failed."
+            return -5
+
+    def _handle_train_employees(self, args):
+        if self.budget >= 10000:
+            self.budget -= 10000
+            self.productivity += 10
+            self.last_action_msg = "Employees trained."
+            return 10
+        else:
+            self.last_action_msg = "Not enough budget."
+            return -5
+
+    def _handle_team_building(self, args):
+        if self.budget >= 8000:
+            self.budget -= 8000
+            self.morale += 10
+            self.last_action_msg = "Team morale improved."
+            return 8
+        else:
+            self.last_action_msg = "Not enough budget."
+            return -3
+
+    def _handle_aggressive_expansion(self, args):
+        if self.budget >= 70000:
+            self.budget -= 70000
+            self.market_score += 20
+            self.competitor_pressure += 10
+            self.last_action_msg = "Expansion done."
+            return 20
+        else:
+            self.last_action_msg = "Expansion failed."
+            return -10
+
+    def _handle_market_events(self):
+        if random.random() < 0.2:
+            event = random.choice([
+                "Market boom",
+                "Competitor launch",
+                "Economic slowdown"
+            ])
+            self.active_events.append(event)
+
+            if event == "Market boom":
+                self.market_score += 10
+            elif event == "Competitor launch":
+                self.competitor_pressure += 10
+            elif event == "Economic slowdown":
+                self.market_score -= 10
