@@ -46,9 +46,7 @@ def step(action: Action):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-def main():
-    return app
-
+import uvicorn
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run(app, host="0.0.0.0", port=7860)
