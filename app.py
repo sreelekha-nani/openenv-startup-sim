@@ -26,7 +26,7 @@ def home():
 # ✅ RESET
 @app.get("/reset")
 def reset(task: str = "default"):
-    print("START")  # Required log
+    print("START")
 
     global env
 
@@ -51,13 +51,13 @@ def get_state():
 # ✅ STEP
 @app.post("/step")
 def step(action: Action):
-    print("STEP")  # Required log
+    print("STEP")
 
     try:
         result = env.step(action)
 
         if result.done:
-            print("END")  # Required log
+            print("END")
 
         return {
             "observation": result.observation,
@@ -73,3 +73,10 @@ def step(action: Action):
 # ✅ REQUIRED ENTRY FOR OPENENV
 def main():
     return app
+
+
+# ✅🔥 VERY IMPORTANT (THIS WAS MISSING)
+if __name__ == "__main__":
+    import uvicorn
+    print("SERVER STARTING...")   # debug log
+    uvicorn.run("app:app", host="0.0.0.0", port=7860)
