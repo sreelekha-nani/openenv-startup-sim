@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, HTTPException
 
 from env import StartupEnv
@@ -9,6 +10,12 @@ from tasks.hard import get_task as get_hard
 
 app = FastAPI(title="Founder Brain AI Server")
 
+# ✅ Home route (important)
+@app.get("/")
+def home():
+    return {"message": "Startup Env API is running 🚀"}
+
+# Global environment instance
 env = StartupEnv()
 
 @app.get("/reset")
@@ -46,6 +53,7 @@ def step(action: Action):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# Optional (local run only)
 import uvicorn
 
 if __name__ == "__main__":
